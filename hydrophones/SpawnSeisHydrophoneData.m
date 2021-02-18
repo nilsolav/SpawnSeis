@@ -1,9 +1,23 @@
-addpath(genpath('m_map'))
-
 % Hydrophone measurements for the SpawnSeis exposure project
+% Requires the m_map package
 
+%% Metata
+% The data root dir depends on the computer. Place a local file called 
+% 'rootdir.json' with the content {"rootdir":"d:/DATA/"} pointing to your
+% local storage. Defaults to imr's file store.
 
-%% Metadata for each hydrophone 
+if exist('rootdir.json','file')
+    fid = fopen('rootdir.json','rt'); % Opening the file.
+    raw = fread(fid,inf); % Reading the contents.
+    fclose(fid); % Closing the file.
+    str = char(raw'); % Transformation.
+    par = jsondecode(str); % Using the jsondecode function to parse JSON from string.
+    rootdir = par.rootdir;
+else
+    rootdir = '\\ces.hi.no\';
+end
+
+% Metadata for each hydrophone 
 [~,~,Hmeta_raw] = xlsread('SpawnSeisHydrophoneMetaData.csv');
 Hmeta=cell2struct(Hmeta_raw(2:end,[1:7]),Hmeta_raw(1,[1:7]),2);
 
