@@ -27,7 +27,8 @@ for i=1:length(D)
     % Read file
     file = D{i};
     ainf = audioinfo(file);
-    dat = audioread(file);
+    dat =  detrend(audioread(file));
+    %dat =  audioread(file)
     dt = 1/ainf.SampleRate;
     t = ((1:length(dat))-1)*dt;
     % Select pulse for plotting
