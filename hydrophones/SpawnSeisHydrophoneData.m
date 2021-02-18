@@ -4,15 +4,15 @@ addpath(genpath('m_map'))
 
 
 %% Metadata for each hydrophone 
-[~,~,Hmeta_raw] = xlsread('SpawnSeisHydrophoneMetaData.xlsx');
+[~,~,Hmeta_raw] = xlsread('SpawnSeisHydrophoneMetaData.csv');
 Hmeta=cell2struct(Hmeta_raw(2:end,[1:7]),Hmeta_raw(1,[1:7]),2);
 
 % Metadata for each hydrophone deployment
-[~,~,Dmeta_raw] = xlsread('SpawnSeisHydrophoneDeploymentMetaData.xlsx');
+[~,~,Dmeta_raw] = xlsread('SpawnSeisHydrophoneDeploymentMetaData.csv');
 Dmeta=cell2struct(Dmeta_raw(2:end,:),Dmeta_raw(1,:),2);
 
 % Get metadata for the treatments
-[~,~,Tmeta_raw] = xlsread('.\..\..\CRUISE_LOG\ACTIVITY\treatments.xlsx');
+[~,~,Tmeta_raw] = xlsread('treatments.csv');
 Tmeta=cell2struct(Tmeta_raw(2:end,:),Tmeta_raw(1,:),2);
 
 %% Get calibration data per deployment
