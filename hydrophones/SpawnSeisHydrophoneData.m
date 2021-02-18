@@ -14,12 +14,12 @@ if exist('rootdir.json','file')
     par = jsondecode(str); % Using the jsondecode function to parse JSON from string.
     rootdir = par.rootdir;
 else
-    rootdir = '\\ces.hi.no\';
+    rootdir = '\\ces.hi.no\cruise_data';
 end
 
 % Metadata for each hydrophone 
 [~,~,Hmeta_raw] = xlsread('SpawnSeisHydrophoneMetaData.csv');
-Hmeta=cell2struct(Hmeta_raw(2:end,[1:7]),Hmeta_raw(1,[1:7]),2);
+Hmeta=cell2struct(Hmeta_raw(2:end,:),Hmeta_raw(1,:),2);
 
 % Metadata for each hydrophone deployment
 [~,~,Dmeta_raw] = xlsread('SpawnSeisHydrophoneDeploymentMetaData.csv');
@@ -30,10 +30,10 @@ Dmeta=cell2struct(Dmeta_raw(2:end,:),Dmeta_raw(1,:),2);
 Tmeta=cell2struct(Tmeta_raw(2:end,:),Tmeta_raw(1,:),2);
 
 %% Get calibration data per deployment
-for i=[1 2 5 6]% 6 7 8] %1:length(Dmeta)
+for i=2%[1 2 5 6]% 6 7 8] %1:length(Dmeta)
    knownPa = 10^((Dmeta(i).CalibrationLevel/20)-6); % Pa reference pressure rms-value in calibrator with naxys coupler (Se doc in H2... folder)
    % Beginning calibration
-   calfile = Dmeta(i).CalibrationFileBeginning; %nok med ei fil
+   calfile = fullfile(rootdir,'2020',Dmeta(i).CalibrationFileBeginning); %nok med ei fil
    dat_temp =audioread(calfile,'native'); %les inn rå-versjonen, utan native blir normalisert til 1.
    dat=detrend(double(dat_temp));
 %   figure(i)
