@@ -49,5 +49,20 @@ for i=1:length(D)
 end
 
 disp(diff(SEL))
+%%
 
-% Ca avstand mellom hydrofonar
+% Avstand frå fartøy til den første hydrofonen
+R1 = 2000; % m
+% Ca avstand mellom hydrofonar : 3000 m
+R2 = R1 + 3000; % m
+
+% Ca demping mellom punkta
+% Es/R0  E1=Es/R1  E2=Es/R2
+% E1 = Es/R1, E2=Es/R2
+% E1/E2 = (Es/R1)/(Es/R2) = R2/R1
+% E1/E2 = (Es/R1^2)/(Es/R2^2) = R2^2/R1^2
+disp(['Actual loss between hydrophones: ',num2str(diff(SEL)),' dB re 1\muPa^2 s'])
+disp(['Expected damping between hydrophones assuming spherical transmission loss: ',num2str(20*log10(R1/R2)),' dB'])
+disp(['Expected damping between hydrophones assuming cylindrical transmission loss: ',num2str(10*log10(R1/R2)),' dB'])
+
+
