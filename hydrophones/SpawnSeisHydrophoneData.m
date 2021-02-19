@@ -29,17 +29,31 @@ Dmeta=cell2struct(Dmeta_raw(2:end,:),Dmeta_raw(1,:),2);
 [~,~,Tmeta_raw] = xlsread('treatments.csv');
 Tmeta=cell2struct(Tmeta_raw(2:end,:),Tmeta_raw(1,:),2);
 
-%% Get calibration data per deployment
-for i=2%[1 2 5 6 7]
+%% Check if calibration files exists
+for i = [14 15 17 18 19 20]%[1 2 5 6 7 15 16 18 19 20 21]
+   calfile_e = fullfile(rootdir,Dmeta(i).StartTime(7:10),Dmeta(i).CalibrationFileEnd);
+   calfile_b = fullfile(rootdir,Dmeta(i).StartTime(7:10),Dmeta(i).CalibrationFileBeginning);
+   disp(calfile_b)
+   exist(calfile_b)
+   disp(calfile_e)
+   exist(calfile_e)
+end
+
+%% Get calibration data per deployment and store in .mat file
+for i= [14 15 17 18 19 20]%[1 2 5 6 7]
    knownPa = 10^((Dmeta(i).CalibrationLevel/20)-6); % Pa reference pressure rms-value in calibrator with naxys coupler (Se doc in H2... folder)
    % Beginning calibration
-   calfile = fullfile(rootdir,'2020',Dmeta(i).CalibrationFileBeginning); %nok med ei fil
-   dat_temp = audioread(calfile,'native'); %les inn rå-versjonen, utan native blir normalisert til 1.
-   dat = detrend(double(dat_temp));
-%   figure(i)
-%   plot(dat)
-%   hold on;
-%   title(Dmeta(i).Folder, 'Interpreter', 'none')
+   Calfile{1} = fullfile(rootdir,Dmeta(i).StartTime(7:10),Dmeta(i).CalibrationFileBeginning); %nok med ei fil
+   Calfile{2} = fullfile(rootdir,Dmeta(i).StartTime(7:10),Dmeta(i).CalibrationFileEnd);
+   for j=1:2
+       disp([i j])
+       calfile = Calfile{j};
+       dat_temp = audioread(calfile,'native'); %les inn rå-versjonen, utan native blir normalisert til 1.
+       dat = detrend(double(dat_temp));
+    %   figure(i)
+    %      plot(dat)
+    %   hold on;
+    %   title(Dmeta(i).Folder, 'Interpreter', 'none')
 
    
 %    if strcmp(Dmeta(i).CalibrationStopIndBeginning,'end')
@@ -53,8 +67,8 @@ for i=2%[1 2 5 6 7]
    disp(['This value shoud be 26.6. Check: ',num2str(rms(dat)*caldata(i,1))])
    Fs = dat_inf.SampleRate;
    rmsValueCal=rms(dat);
-   calibrationfactor(i)=knownPa/rmsValueCal; %multiply measured values with this in order to get calibrated Pa
-   
+   calibrationfactor(i,j)=knownPa/rmsValueCal; %multiply measured values with this in order to get calibrated Pa
+   end
    %    
 %    % End calibration
 %    calfile = Dmeta(i).CalibrationFileEnd;
@@ -69,6 +83,7 @@ for i=2%[1 2 5 6 7]
 %    caldata(i,2) = caltarget/rms(dat);
 %    disp(['This value shoud be 26.6. Check: ',num2str(rms(dat)*caldata(i,2))])
 end
+save calibrationfactor.mat calibrationfactor
 
 %% Sound exposures
 SpawnSeisHydrophoneDataTreatment_testRMSogMaxogFrek(Dmeta,Tmeta,calibrationfactor)
