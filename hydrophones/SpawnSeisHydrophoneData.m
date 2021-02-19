@@ -30,12 +30,12 @@ Dmeta=cell2struct(Dmeta_raw(2:end,:),Dmeta_raw(1,:),2);
 Tmeta=cell2struct(Tmeta_raw(2:end,:),Tmeta_raw(1,:),2);
 
 %% Get calibration data per deployment
-for i=2%[1 2 5 6]% 6 7 8] %1:length(Dmeta)
+for i=2%[1 2 5 6 7]
    knownPa = 10^((Dmeta(i).CalibrationLevel/20)-6); % Pa reference pressure rms-value in calibrator with naxys coupler (Se doc in H2... folder)
    % Beginning calibration
    calfile = fullfile(rootdir,'2020',Dmeta(i).CalibrationFileBeginning); %nok med ei fil
-   dat_temp =audioread(calfile,'native'); %les inn rå-versjonen, utan native blir normalisert til 1.
-   dat=detrend(double(dat_temp));
+   dat_temp = audioread(calfile,'native'); %les inn rå-versjonen, utan native blir normalisert til 1.
+   dat = detrend(double(dat_temp));
 %   figure(i)
 %   plot(dat)
 %   hold on;
@@ -51,12 +51,9 @@ for i=2%[1 2 5 6]% 6 7 8] %1:length(Dmeta)
    dat_inf = audioinfo(calfile);
    caldata(i,1) = knownPa/rms(dat);
    disp(['This value shoud be 26.6. Check: ',num2str(rms(dat)*caldata(i,1))])
-   Fs=dat_inf.SampleRate;
-
-   
+   Fs = dat_inf.SampleRate;
    rmsValueCal=rms(dat);
    calibrationfactor(i)=knownPa/rmsValueCal; %multiply measured values with this in order to get calibrated Pa
-
    
    %    
 %    % End calibration
@@ -78,16 +75,16 @@ SpawnSeisHydrophoneDataTreatment_testRMSogMaxogFrek(Dmeta,Tmeta,calibrationfacto
 %SpawnSeisHydrophoneDataTreatment_testRMSogMaxogFrekNoise(Dmeta,Tmeta,calibrationfactor)
 %SpawnSeisHydrophoneDataTreatment(Dmeta,Tmeta,calibrationfactor)
 %SpawnSeisHydrophoneDataTreatment_testFilter(Dmeta,Tmeta,calibrationfactor)
-% %% Make map of hydrophone placements
-% figure
-% m_proj('albers equal-area','long',[5 5+8/60],'lat',[60+5/60 60+8/60]);
-% m_grid('box','fancy','tickdir','in');   
-% m_gshhs_f('patch',[.7 .9 .7]);
-% hold on
-% for i=1:length(Dmeta)
-%     m_plot(Dmeta(i).LONdeg + Dmeta(i).LONmin/60,Dmeta(i).LATdeg + Dmeta(i).LATmin/60,'*')
-% end
-% colormap(flipud(copper));
+%% Make map of hydrophone placements
+figure
+m_proj('albers equal-area','long',[5 5+8/60],'lat',[60+5/60 60+8/60]);
+m_grid('box','fancy','tickdir','in');   
+m_gshhs_f('patch',[.7 .9 .7]);
+hold on
+for i=1:length(Dmeta)
+    m_plot(Dmeta(i).LONdeg + Dmeta(i).LONmin/60,Dmeta(i).LATdeg + Dmeta(i).LATmin/60,'*')
+end
+colormap(flipud(copper));
 
 
 
