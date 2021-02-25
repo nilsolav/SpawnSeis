@@ -20,13 +20,14 @@ load calibrationfactor.mat
 
 %% 15.02 1700
 %data\2020\S2020830_PH.U. SVERDRUP II[1007]\EXPERIMENTS\HYDROPHONES\D2_BottomMooredHydrophoneNo3
-%D{1} = fullfile(rootdir,'\2020\S2020830_PH.U. SVERDRUP II[1007]\EXPERIMENTS\HYDROPHONES\D2_BottomMooredHydrophoneNo3\03_20200210-163405.wav');
-D{1} = fullfile(rootdir,'\2021\S2021826_PH.U.SVERDRUP II[1007]\EXPERIMENTS\HYDROPHONES\D14_BottomMooredHydrophone\04_20210215-182951.wav');
-D{2} = fullfile(rootdir,'\2021\S2021826_PH.U.SVERDRUP II[1007]\EXPERIMENTS\HYDROPHONES\D15_BottomMooredHydrophone\02_20210215-182956.wav');
-I =[14 15]; % The index in the metadata file
+D{1} = fullfile(rootdir,'\2020\S2020830_PH.U. SVERDRUP II[1007]\EXPERIMENTS\HYDROPHONES\D1_BottomMooredHydrophoneNo2\02_20200210-163403.wav');
+D{2} = fullfile(rootdir,'\2020\S2020830_PH.U. SVERDRUP II[1007]\EXPERIMENTS\HYDROPHONES\D2_BottomMooredHydrophoneNo3\03_20200210-163405.wav');
+D{3} = fullfile(rootdir,'\2021\S2021826_PH.U.SVERDRUP II[1007]\EXPERIMENTS\HYDROPHONES\D14_BottomMooredHydrophone\04_20210215-182951.wav');
+D{4} = fullfile(rootdir,'\2021\S2021826_PH.U.SVERDRUP II[1007]\EXPERIMENTS\HYDROPHONES\D15_BottomMooredHydrophone\02_20210215-182956.wav');
+I =[1 2 14 15]; % The index in the metadata file
 
 % Start of pulse index
-ind = [724000 620000];
+ind = [585000 330000 724000 620000];
 % Plotting interval (tp) and integration interval (ti) in seconds relative 
 % to the start index (ind) for the pulse
 tp = [-1 2];
@@ -37,7 +38,7 @@ for i=1:length(D)
     t0(i) = datenum(D{i}(end-18:end-4),'yyyymmdd-HHMMSS');
 end
 
-%%
+%
 close all
 figure(1)
 for i=1:length(D)
@@ -56,15 +57,17 @@ for i=1:length(D)
     SEL(i) = 10*log10(trapz(t(indi),(dat(indi)*10^6).^2));% Convert Pa to uPa
     
     % Plot (should be around 100-150 Pa)
-    subplot(1,length(D),i)
+    figure(i)
     hold on
     %title(datestr(t0(i)))
+    %plot(dat)
     plot(t(indp)-t(ind(i)),dat(indp),'b')
-    %plot(t-t(ind(i)),dat,'b')
     plot(t(indi)-t(ind(i)),dat(indi),'r')
-    ylim([-50 85])
+    %ylim([-50 85])
     ylabel('Pressure (Pa)')
     xlabel('Time (s)')
+    F=['Fig',num2str(i),'_SEL',num2str(round(SEL(i))),'_',datestr(t0(i),30),'.png'];
+    print(F,'-dpng')
 end
 disp(['SEL:',num2str(SEL)])
 disp(diff(SEL))

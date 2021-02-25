@@ -30,18 +30,19 @@ Dmeta=cell2struct(Dmeta_raw(2:end,:),Dmeta_raw(1,:),2);
 Tmeta=cell2struct(Tmeta_raw(2:end,:),Tmeta_raw(1,:),2);
 
 %% Check if calibration files exists
-for i = 2%[1 2 5 6 7 14 15 17 18 19 20]%[1 2 5 6 7 15 16 18 19 20 21]
-   calfile_e = fullfile(rootdir,Dmeta(i).StartTime(7:10),Dmeta(i).CalibrationFileEnd);
-   calfile_b = fullfile(rootdir,Dmeta(i).StartTime(7:10),Dmeta(i).CalibrationFileBeginning);
-   disp(i)
-   disp(calfile_b)
-   exist(calfile_b)
-   disp(calfile_e)
-   exist(calfile_e)
+for i = [1 2 5 6 7 14 15 17 18 19 20]
+    calfile_e = fullfile(rootdir,Dmeta(i).StartTime(7:10),Dmeta(i).CalibrationFileEnd);
+    calfile_b = fullfile(rootdir,Dmeta(i).StartTime(7:10),Dmeta(i).CalibrationFileBeginning);
+    if ~exist(calfile_b)
+        disp(['Index:',num2str(i),'; Missing: ',calfile_b])
+    end
+    if ~exist(calfile_e)
+        disp(['Index:',num2str(i),'; Missing: ',calfile_e])
+    end
 end
 
 %% Get calibration data per deployment and store in .mat file
-for i= [2 14 15 17 18 19 20]%[1 2 5 6 7]
+for i = [2 6 7 14 15 17 18 19 20]
    knownPa = 10^((Dmeta(i).CalibrationLevel/20)-6); % Pa reference pressure rms-value in calibrator with naxys coupler (Se doc in H2... folder)
    % Beginning calibration
    Calfile{1} = fullfile(rootdir,Dmeta(i).StartTime(7:10),Dmeta(i).CalibrationFileBeginning); %nok med ei fil
