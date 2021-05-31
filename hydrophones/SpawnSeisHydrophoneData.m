@@ -30,6 +30,7 @@ Dmeta=cell2struct(Dmeta_raw(2:end,:),Dmeta_raw(1,:),2);
 Tmeta=cell2struct(Tmeta_raw(2:end,:),Tmeta_raw(1,:),2);
 
 %% Check if calibration files exists
+% excluding sound trap and vessel mounted hydrophones, i.e. i \in [3 4 8 9 10 11 12 13])
 for i = [1 2 5 6 7 14 15 17 18 19 20]
     calfile_e = fullfile(rootdir,Dmeta(i).StartTime(7:10),Dmeta(i).CalibrationFileEnd);
     calfile_b = fullfile(rootdir,Dmeta(i).StartTime(7:10),Dmeta(i).CalibrationFileBeginning);
@@ -42,48 +43,32 @@ for i = [1 2 5 6 7 14 15 17 18 19 20]
 end
 
 %% Get calibration data per deployment and store in .mat file
-for i = [2 6 7 14 15 17 18 19 20]
+for i = [1 2 5 6 7 14 15 17 18 19 20]
    knownPa = 10^((Dmeta(i).CalibrationLevel/20)-6); % Pa reference pressure rms-value in calibrator with naxys coupler (Se doc in H2... folder)
    % Beginning calibration
-   Calfile{1} = fullfile(rootdir,Dmeta(i).StartTime(7:10),Dmeta(i).CalibrationFileBeginning); %nok med ei fil
+   Calfile{1} = fullfile(rootdir,Dmeta(i).StartTime(7:10),Dmeta(i).CalibrationFileBeginning);
+   % End calibration
    Calfile{2} = fullfile(rootdir,Dmeta(i).StartTime(7:10),Dmeta(i).CalibrationFileEnd);
+   % Loop over beginning and end calibration
    for j=1:2
        disp([i j])
        calfile = Calfile{j};
-       dat_temp = audioread(calfile,'native'); %les inn rå-versjonen, utan native blir normalisert til 1.
-       dat = detrend(double(dat_temp));
-    %   figure(i)
-    %      plot(dat)
-    %   hold on;
-    %   title(Dmeta(i).Folder, 'Interpreter', 'none')
-
-   
-%    if strcmp(Dmeta(i).CalibrationStopIndBeginning,'end')
-%        dat = dat_temp(Dmeta(i).CalibrationStartIndBeginning:end);
-%    else
-%        dat = dat_temp(Dmeta(i).CalibrationStartIndBeginning:Dmeta(i).CalibrationStopIndBeginning);       
-%    end
-   
-   dat_inf = audioinfo(calfile);
-   caldata(i,1) = knownPa/rms(dat);
-   disp(['This value shoud be 26.6. Check: ',num2str(rms(dat)*caldata(i,1))])
-   Fs = dat_inf.SampleRate;
-   rmsValueCal=rms(dat);
-   calibrationfactor(i,j)=knownPa/rmsValueCal; %multiply measured values with this in order to get calibrated Pa
+       % Test if calibratiuon file exist
+       if exist(calfile)
+           % Read calibration files and convert to Pa
+           dat_temp = audioread(calfile,'native'); %les inn rå-versjonen, utan native blir normalisert til 1.
+           dat = detrend(double(dat_temp));
+           dat_inf = audioinfo(calfile);
+           caldata(i,1) = knownPa/rms(dat);
+           disp(['This value should be 26.6. Check: ',num2str(rms(dat)*caldata(i,1))])
+           Fs = dat_inf.SampleRate;
+           rmsValueCal=rms(dat);
+           calibrationfactor(i,j)=knownPa/rmsValueCal; %multiply measured values with this in order to get calibrated Pa
+       else
+            disp('This value should be 26.6. Check: NaN')
+           calibrationfactor(i,j) = NaN;
+       end
    end
-   %    
-%    % End calibration
-%    calfile = Dmeta(i).CalibrationFileEnd;
-%    dat_temp = detrend(audioread(calfile));
-%    
-%    if strcmp(Dmeta(i).CalibrationStopIndEnd,'end')
-%        dat = dat_temp(Dmeta(i).CalibrationStartIndEnd:end);
-%    else
-%        dat = dat_temp(Dmeta(i).CalibrationStartIndEnd:Dmeta(i).CalibrationStopIndEnd);       
-%    end
-%    dat_inf = audioinfo(calfile);
-%    caldata(i,2) = caltarget/rms(dat);
-%    disp(['This value shoud be 26.6. Check: ',num2str(rms(dat)*caldata(i,2))])
 end
 save calibrationfactor.mat calibrationfactor
 
@@ -100,6 +85,7 @@ m_gshhs_f('patch',[.7 .9 .7]);
 hold on
 for i=1:length(Dmeta)
     m_plot(Dmeta(i).LONdeg + Dmeta(i).LONmin/60,Dmeta(i).LATdeg + Dmeta(i).LATmin/60,'*')
+    m_text(Dmeta(i).LONdeg + Dmeta(i).LONmin/60,Dmeta(i).LATdeg + Dmeta(i).LATmin/60,'*')
 end
 colormap(flipud(copper));
 
