@@ -26,6 +26,7 @@ D{3} = fullfile(rootdir,'\2021\S2021826_PH.U.SVERDRUP II[1007]\EXPERIMENTS\HYDRO
 D{4} = fullfile(rootdir,'\2021\S2021826_PH.U.SVERDRUP II[1007]\EXPERIMENTS\HYDROPHONES\D15_BottomMooredHydrophone\02_20210215-182956.wav');
 I =[1 2 14 15]; % The index in the metadata file
 
+
 % Start of pulse index
 ind = [585000 330000 724000 620000];
 % Plotting interval (tp) and integration interval (ti) in seconds relative 
@@ -45,9 +46,11 @@ for i=1:length(D)
     % Read file
     file = D{i};
     ainf = audioinfo(file);
+    dt = 1/ainf.SampleRate;
+    [Cf,Df]=butter(3,[10 5000]/(1/(2*dt)),'bandpass');
     nils = double(audioread(file,'native'));
     dat =  detrend(nils)*calibrationfactor(I(i),1);
-    dt = 1/ainf.SampleRate;
+    dat2 = filtfilt(Cf,Df,nils)*calibrationfactor(I(i),1);
     t = ((1:length(dat))-1)*dt;
     % Select pulse for plotting
     indp = (ind(i)+round(tp(1)/dt)):(ind(i)+round(tp(2)/dt));
@@ -63,6 +66,7 @@ for i=1:length(D)
     %plot(dat)
     plot(t(indp)-t(ind(i)),dat(indp),'b')
     plot(t(indi)-t(ind(i)),dat(indi),'r')
+    plot(t(indp)-t(ind(i)),dat2(indp),'g')
     %ylim([-50 85])
     ylabel('Pressure (Pa)')
     xlabel('Time (s)')
