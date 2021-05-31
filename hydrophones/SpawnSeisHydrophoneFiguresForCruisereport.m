@@ -70,8 +70,10 @@ for i=1:length(D)
     %ylim([-50 85])
     ylabel('Pressure (Pa)')
     xlabel('Time (s)')
+    legend('Original pulse','Pulse for integration','Filtered pulse')
     F=['Fig',num2str(i),'_SEL',num2str(round(SEL(i))),'_',datestr(t0(i),30),'.png'];
     print(F,'-dpng')
+    plotSamples(dat(indp),t(indp))
 end
 disp(['SEL:',num2str(SEL)])
 disp(diff(SEL))

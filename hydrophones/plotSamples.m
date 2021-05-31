@@ -1,4 +1,23 @@
-function plotSamples(data,dt,tidsakse, ii, tittel)
+function plotSamples(p,t,t0)
+% 
+% Analyze each pulse as a function of time
+% 
+% Input:
+% p - pressure
+% t - time
+% t0 - time at pulse
+% 
+% Output:
+% pulse.pospeakpressure [Pa]
+% pulse.negpeakpressure [Pa]
+% pulse.Ex (sound exposure, T=1s, [\muPa^2 s])
+% pulse.SEL (sound exposure level, T=1s, [dB re (1 \muPa)^2 (1 s)])
+%
+% pulse.ESD : energy spectral density
+% pulse.F : frequency vector
+% 
+
+keyboard
 Fs=1/dt;
 MPH=max(data)*0.6;    
 
