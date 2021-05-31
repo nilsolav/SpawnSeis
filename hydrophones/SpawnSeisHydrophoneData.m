@@ -72,6 +72,27 @@ for i = [1 2 5 6 7 14 15 17 18 19 20]
 end
 save calibrationfactor.mat calibrationfactor
 
+%% Append Dmeta with file placement for raw data
+for i=1:length(Tmeta)
+%    disp([datestr(datenum(Tmeta(i).Start),'dd.mm.yyyy HH:MM:SS'),'   ',  datestr(datenum(Tmeta(i).End,'dd.mm.yyyy HH:MM:SS'))])
+%    disp(' ')
+    Tmeta(i).DataDir = NaN;
+    % Relevant deplyments for this treatment
+    k=1;
+    for j=[1 2 5 6 7 14 15 17 18 19 20]
+%        disp([datestr(datenum(Dmeta(j).StartTime,'dd.mm.yyyy HH:MM:SS')),'   ',  datestr(datenum(Dmeta(j).StopTime,'dd.mm.yyyy HH:MM:SS'))])
+        if datenum(Tmeta(i).Start,'dd.mm.yyyy HH:MM:SS') > datenum(Dmeta(j).StartTime,'dd.mm.yyyy HH:MM:SS') && datenum(Tmeta(i).End,'dd.mm.yyyy HH:MM:SS') < datenum(Dmeta(j).StopTime,'dd.mm.yyyy HH:MM:SS')
+            Tmeta(i).Hydrophone(k).DataDir = fullfile(rootdir,Dmeta(j).StartTime(7:10),[Dmeta(j).CalibrationFileBeginning(1:8),'_PH.U.SVERDRUP II[1007]'],'EXPERIMENTS','HYDROPHONES',Dmeta(j).Folder);
+            Tmeta(i).Hydrophone(k).Dmeta_index = j;
+            Tmeta(i).Hydrophone(k).Comment = Dmeta(j).Comment;
+            k=k+1;
+        end        
+    end    
+end
+
+%% Analyze each treatment
+SpawnSeisHydrophoneDataTreatment_all(Dmeta,Tmeta,calibrationfactor)
+
 %% Sound exposures
 SpawnSeisHydrophoneDataTreatment_testRMSogMaxogFrek(Dmeta,Tmeta,calibrationfactor)
 %SpawnSeisHydrophoneDataTreatment_testRMSogMaxogFrekNoise(Dmeta,Tmeta,calibrationfactor)
@@ -85,7 +106,7 @@ m_gshhs_f('patch',[.7 .9 .7]);
 hold on
 for i=1:length(Dmeta)
     m_plot(Dmeta(i).LONdeg + Dmeta(i).LONmin/60,Dmeta(i).LATdeg + Dmeta(i).LATmin/60,'*')
-    m_text(Dmeta(i).LONdeg + Dmeta(i).LONmin/60,Dmeta(i).LATdeg + Dmeta(i).LATmin/60,'*')
+%    m_text(Dmeta(i).LONdeg + Dmeta(i).LONmin/60,Dmeta(i).LATdeg + Dmeta(i).LATmin/60,'*')
 end
 colormap(flipud(copper));
 
