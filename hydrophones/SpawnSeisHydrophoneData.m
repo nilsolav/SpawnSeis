@@ -90,14 +90,23 @@ for i=1:length(Tmeta)
     end    
 end
 
-%% Analyze each treatment
-SpawnSeisHydrophoneDataTreatment_all(Dmeta,Tmeta,calibrationfactor)
+%% Extract data for one treatment
+for i=2%:length(Tmeta)
+    disp(' ')
+    disp(['Block:',num2str(Tmeta(i).BlockNo),' Treatment:', num2str(Tmeta(i).TreatmentNo),' Type:', Tmeta(i).Treatment])
+    % Extract the treatment data and store to tmp file
+    SpawnSeisTreatmentData(Tmeta(i));
+    % Consider storing Dat as temp data...
+    
+    % Process the treatment data
+    
+    % Plot envelope, calculate total SEL over the treatment (Nils Olav)
+    %plotTreatment(Dat)
+    
+    % Plot (a subset of) individual samples (Tonje)
+    %plotSamples(Dat)
+end
 
-%% Sound exposures
-SpawnSeisHydrophoneDataTreatment_testRMSogMaxogFrek(Dmeta,Tmeta,calibrationfactor)
-%SpawnSeisHydrophoneDataTreatment_testRMSogMaxogFrekNoise(Dmeta,Tmeta,calibrationfactor)
-%SpawnSeisHydrophoneDataTreatment(Dmeta,Tmeta,calibrationfactor)
-%SpawnSeisHydrophoneDataTreatment_testFilter(Dmeta,Tmeta,calibrationfactor)
 %% Make map of hydrophone placements
 figure
 m_proj('albers equal-area','long',[5 5+8/60],'lat',[60+5/60 60+8/60]);
@@ -106,7 +115,6 @@ m_gshhs_f('patch',[.7 .9 .7]);
 hold on
 for i=1:length(Dmeta)
     m_plot(Dmeta(i).LONdeg + Dmeta(i).LONmin/60,Dmeta(i).LATdeg + Dmeta(i).LATmin/60,'*')
-%    m_text(Dmeta(i).LONdeg + Dmeta(i).LONmin/60,Dmeta(i).LATdeg + Dmeta(i).LATmin/60,'*')
 end
 colormap(flipud(copper));
 
