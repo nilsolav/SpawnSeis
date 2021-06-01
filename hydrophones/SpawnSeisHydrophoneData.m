@@ -13,8 +13,10 @@ if exist('rootdir.json','file')
     str = char(raw'); % Transformation.
     par = jsondecode(str); % Using the jsondecode function to parse JSON from string.
     rootdir = par.rootdir;
+    tempdir = par.tempdir;
 else
     rootdir = '\\ces.hi.no\cruise_data';
+    tempdir = '.';
 end
 
 % Metadata for each hydrophone 
@@ -95,17 +97,18 @@ for i=2%:length(Tmeta)
     disp(' ')
     disp(['Block:',num2str(Tmeta(i).BlockNo),' Treatment:', num2str(Tmeta(i).TreatmentNo),' Type:', Tmeta(i).Treatment])
     % Extract the treatment data and store to tmp file
-    SpawnSeisTreatmentData(Tmeta(i));
-    % Consider storing Dat as temp data...
-    
-    % Process the treatment data
-    
-    % Plot envelope, calculate total SEL over the treatment (Nils Olav)
-    %plotTreatment(Dat)
-    
-    % Plot (a subset of) individual samples (Tonje)
-    %plotSamples(Dat)
+    SpawnSeisTreatmentData(Tmeta(i),calibrationfactor,tempdir);
 end
+
+%% Process the treatment data
+
+% Plot envelope, calculate total SEL over the treatment (Nils Olav)
+%plotTreatment(Dat)
+%% process pulses
+% Detect time for pulses
+
+% Plot (a subset of) individual samples (Tonje)
+%plotSamples(Dat)
 
 %% Make map of hydrophone placements
 figure

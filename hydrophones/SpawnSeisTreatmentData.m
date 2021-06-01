@@ -1,9 +1,9 @@
-function SpawnSeisFileList(Tmeta_i,calibrationfactor)
+function SpawnSeisTreatmentData(Tmeta_i,calibrationfactor,tempdir)
 % Extract time-pressure data for all sensors from one treatment
 %
 
 % Loop over the different deplyments relevant for this treatment
-for j=1%:length(Tmeta_i.Hydrophone)
+for j=1:length(Tmeta_i.Hydrophone)
     % List all files from this deplyment
     fs=filesep;
     filelist = dir([Tmeta_i.Hydrophone(j).DataDir,fs,'*wav']);
@@ -23,26 +23,35 @@ for j=1%:length(Tmeta_i.Hydrophone)
     else
         ind = (min(ind)):1:max(ind); % But not if it already is the first file
     end
+    % Get calibration factor
+    cal = calibrationfactor(Tmeta_i.Hydrophone(j).Dmeta_index,1);
+
     % Extract the data for the treatment
-    Dat.Pressure=[];
-    Dat.Time=[];
+    Dat.Pressure=zeros(1,400000000);
+    Dat.Time=zeros(1,400000000);
     Dat.T0 = T0;
+    k1=1;
     % Loop over data files for this treatment
     for k=1:length(ind)
-        F = fullfile(filelist(k).folder,filelist(k).name);
+        F = fullfile(filelist(ind(k)).folder,filelist(ind(k)).name);
         ainf = audioinfo(F);
         dt = 1/ainf.SampleRate;
         dat_sub = audioread(F,'native');
-        warning('Add calibration!')
         tim_sub = ((1:length(dat_sub))-1)*dt;% seconds
         % Time for this file in seconds relative to start of treatment (T0)
-        T0_sub =  tim_sub + (T(ind(k))-T0)*3600;
-        % This needs refactoring:
-        Dat.Pressure = [Dat.Pressure dat_sub'];
-        Dat.Time = [Dat.Time T0_sub];
+        T0_sub =  tim_sub + (T(ind(k))-T0)*3600*24;
+        % Adding data
+        k2 = k1-1+length(dat_sub);
+        Dat.Pressure(k1:k2) = double(dat_sub')*cal;
+        Dat.Time(k1:k2) = T0_sub;
+        k1 = k2+1;
     end
+    % Trim data files
+    Dat.Pressure = Dat.Pressure(1:k2);
+    Dat.Time = Dat.Time(1:k2);
+    
     tmpfil = ['Block',num2str(Tmeta_i.BlockNo),'_Treat',num2str(Tmeta_i.TreatmentNo),'_Hydr',num2str(j),'.mat'];
-    save(tmpfil,'Dat','-v7.3')
+    save(fullfile(tempdir,tmpfil),'Dat','-v7.3')
     clear Dat
 end
 end
