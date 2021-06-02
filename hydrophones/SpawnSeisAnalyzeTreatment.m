@@ -5,7 +5,7 @@ function Pulses = SpawnSeisAnalyzeTreatment(Tmeta_i,tempdir,par)
 %
 
 % Loop over the different deplyments relevant for this treatment
-for j=1:length(Tmeta_i.Hydrophone)
+for j=1:2%&length(Tmeta_i.Hydrophone)
     % read TEMP files
     tmpfil = ['Block',num2str(Tmeta_i.BlockNo),'_Treat',num2str(Tmeta_i.TreatmentNo),'_Hydr',num2str(j),'.mat'];
     figfil = ['Block',num2str(Tmeta_i.BlockNo),'_Treat',num2str(Tmeta_i.TreatmentNo),'_Hydr',num2str(j),'.png'];
@@ -29,7 +29,9 @@ for j=1:length(Tmeta_i.Hydrophone)
         p = Dat.Pressure(ind);
         
         % Calculate stats per pulse (Tonje)
-        Pulses(k).pulse = AnalyzePulse(t,p,Pulses(k).t0);
+        frek=1;%include frequency analysis
+        plt=1; %plot figures for pulse analysis
+        Pulses(k).pulse = AnalyzePulse(t,p,Pulses(k).t0,plt,frek);
     end
     
     
@@ -97,7 +99,7 @@ Pulses.pp_f = pks(~locind);
 
 end
 
-function pulse=AnalyzePulse(t,p,t0)
+function pulse=AnalyzePulse(t,p,t0,plt,frek)
 % Analyze each individual pulse
 figure
 plot(t,p)
