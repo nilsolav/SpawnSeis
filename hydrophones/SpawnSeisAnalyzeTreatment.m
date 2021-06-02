@@ -5,71 +5,52 @@ function Pulses = SpawnSeisAnalyzeTreatment(Tmeta_i,tempdir,par)
 %
 
 % Loop over the different deplyments relevant for this treatment
-for j=1:2%&length(Tmeta_i.Hydrophone)
+for j=1:length(Tmeta_i.Hydrophone)
     % read TEMP files
-    tmpfil = ['Block',num2str(Tmeta_i.BlockNo),'_Treat',num2str(Tmeta_i.TreatmentNo),'_Hydr',num2str(j),'.mat'];
-    figfil = ['Block',num2str(Tmeta_i.BlockNo),'_Treat',num2str(Tmeta_i.TreatmentNo),'_Hydr',num2str(j),'.png'];
-    load(fullfile(tempdir,tmpfil),'Dat'); % Loads DAT
-    % Dat.Pressure
-    % Dat.Time
-    % Dat.T0
-    
-    % Filter data prior to analysis
-    %par.tmin = 4;
-    %par.tmax = 4;
-    
-    % Detect and filter pulses (Nils Olav)
-    DetectedPulses = DetectPulse(Dat);
-    
-    % Analyze individual pulses 
-    for k=1:length(DetectedPulses.pp)
-        % Select pulse
-        ind = Dat.Time>(DetectedPulses.t0(k)-par.tmin) & Dat.Time<(DetectedPulses.t0(k)+par.tmax);
-        t = Dat.Time(ind);
-        p = Dat.Pressure(ind);
+    tmpfil = fullfile(tempdir,['Block',num2str(Tmeta_i.BlockNo),'_Treat',num2str(Tmeta_i.TreatmentNo),'_Hydr',num2str(j),'.mat']);
+    figfil = fullfile(tempdir,['Block',num2str(Tmeta_i.BlockNo),'_Treat',num2str(Tmeta_i.TreatmentNo),'_Hydr',num2str(j),'.png']);
+    pulsefil = fullfile(tempdir,['Block',num2str(Tmeta_i.BlockNo),'_Treat',num2str(Tmeta_i.TreatmentNo),'_Hydr',num2str(j),'pulses.mat']);
+    if exist(tmpfil)
+        load(tmpfil,'Dat'); % Loads DAT
         
-        % Calculate stats per pulse (Tonje)
-        frek=1;%include frequency analysis
-        plt=1; %plot figures for pulse analysis
-        Pulses(k).pulse = AnalyzePulse(t,p,Pulses(k).t0,plt,frek);
+        % Detect and filter pulses (Nils Olav)
+        if ~exist(pulsefil)
+            p = Dat.Pressure;
+            t = Dat.Time;
+            DetectedPulses = DetectPulse(t,p,par);
+            save(pulsefil,'DetectedPulses')
+        else
+            load(pulsefil,'DetectedPulses')
+        end
+        
+        % Plot files in headless mode
+        f = figure('visible', 'off');
+        plot(DetectedPulses.t0_f,DetectedPulses.pp_f,'r.',DetectedPulses.t0,DetectedPulses.pp,'b.')
+        title(Tmeta_i.Hydrophone(j).Comment)
+        xlabel('Time relative to start Treatment (s)')
+        ylabel('Positive Peak Pressure (Pa)')
+        legend('Incomplete pulses','Valid pulses')
+        print(figfil,'-dpng')
+        close(f)
+        
+        % Analyze individual pulses
+        %     for k=1:length(DetectedPulses.pp)
+        %         % Select pulse
+        %         ind = Dat.Time>(DetectedPulses.t0(k)-par.tmin) & Dat.Time<(DetectedPulses.t0(k)+par.tmax);
+        %         t = Dat.Time(ind);
+        %         p = Dat.Pressure(ind);
+        %
+        %         % Calculate stats per pulse (Tonje)
+        %         frek=1;%include frequency analysis
+        %         plt=1; %plot figures for pulse analysis
+        %         Pulses(k).pulse = AnalyzePulse(t,p,Pulses(k).t0,plt,frek);
+        %     end
     end
-    
-    
-%     % Plot files in headless mode
-%     f = figure('visible', 'off');
-%     plot(Dat.Time,upper,'k',Dat.Time,lower,'k')
-%     title(Tmeta_i.Comment)
-%     xlabel('Time relative to start Treatment (s)')
-%     ylabel('Pressure envelope (Pa)')
-%     print(fullfile(tempdir,figfil),'-dpng')
-%     close(f)
-
 end
 end
 
-function Pulses = DetectPulse(Dat)
+function Pulses = DetectPulse(t,p,par)
 % Detects the pulses (time and positive peak pressures)
-
-% Subset for testing
-% Pulses(1).t0=95.36;
-% Pulses(1).pp=43;
-% par.tmin = 30;
-% par.tmax = 30;
-% ind = Dat.Time>(Pulses(1).t0-par.tmin) & Dat.Time<(Pulses(1).t0+par.tmax);
-% p = Dat.Pressure(ind);
-% t = Dat.Time(ind);
-%  ind = Dat.Time>6670 & Dat.Time<6720;
-%  p = Dat.Pressure(ind);
-%  t = Dat.Time(ind);
-
-p = Dat.Pressure;
-t = Dat.Time;
-
-% par.tmin = 4;
-% par.tmax = 4;
-% Fs = par.Fs;
-
-plot(t,p)
 
 % Find peak candidates
 [pks,loc]=findpeaks(p,t,'MinPeakDistance',par.minpeakdistance);
@@ -80,12 +61,13 @@ hold on
 for i=1:length(loc)
     indpulse = t > (loc(i)-par.tmin) & t < (loc(i)+par.tmax);
     % Adding ten samples to be on the safe side. Sloppy, but works.
-    if (length(t(indpulse))+10)>par.minpeakdistance*Fs
+    if (length(t(indpulse))+10)>(par.tmin+par.tmax)*par.Fs
        locind(i)= true;
     else
         locind(i)=false;
     end
 end
+
 % testplot
 %plot(loc(locind),pks(locind),'b-*',loc(~locind),pks(~locind),'r*')
 %semilogy(loc(locind),pks(locind),'b-*',loc(~locind),pks(~locind),'r*')
@@ -119,7 +101,7 @@ tidN=tid-round(2*Fs);
 
 %Select 1 second long signal to analyze
 S1=p(tid);%signal
-S1N=p(tidN);%støy
+S1N=p(tidN);%stï¿½y
 
 %Find and save max and min:
 [p1_max,t1_max]=max(S1);
@@ -143,7 +125,7 @@ pulse.SELN=10*log10(noise.Ex/1e-12)
 
 %% frekvensanalyse
 if frek==1;
-    tuk=tukeywin(length(S1),0.3); %Tapering: lagar vindu som gir ein glatt overgang ved å setje start og sluttverdi på tidsvindu til 0
+    tuk=tukeywin(length(S1),0.3); %Tapering: lagar vindu som gir ein glatt overgang ved ï¿½ setje start og sluttverdi pï¿½ tidsvindu til 0
     S=tuk.*S1; %1 sekund signal-sekvens
     %tek fft;
     SN=tuk.*S1N;
@@ -173,7 +155,7 @@ if frek==1;
     hold on
     plot(t(tid),S1,'k')
     plot(t(tidN),S1N,'r')
-    legend(['max peak=' num2str(round(20*log10(pulse.pospeakpressure/1e-6),1)) ' dB re 1 \muPa'],['1 sek seismic SEL=' num2str(round(pulse.SEL),1)) 'dB re 1 \muPa^2\cdots'],['1 sek ambient SEL=' num2str(round((pulse.SELN),1) 'dB re 1 \muPa^2\cdots'])
+   % legend(['max peak=' num2str(round(20*log10(pulse.pospeakpressure/1e-6),1)) ' dB re 1 \muPa'],['1 sek seismic SEL=' num2str(round(pulse.SEL),1)) 'dB re 1 \muPa^2\cdots'],['1 sek ambient SEL=' num2str(round((pulse.SELN),1) 'dB re 1 \muPa^2\cdots'])
     %title(['1 second ' tittel], 'Interpreter', 'none')
     xlabel('clock time, UTC')
     ylabel('Pa')
