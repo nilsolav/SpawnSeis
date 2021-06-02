@@ -93,7 +93,7 @@ for i=1:length(Tmeta)
 end
 
 %% Extract data for one treatment
-for i=2%:length(Tmeta)
+for i=1:length(Tmeta)
     disp(' ')
     disp(['Block:',num2str(Tmeta(i).BlockNo),' Treatment:', num2str(Tmeta(i).TreatmentNo),' Type:', Tmeta(i).Treatment])
     % Extract the treatment data and store to tmp file
@@ -101,6 +101,16 @@ for i=2%:length(Tmeta)
 end
 
 %% Process the treatment data
+% Filter data prior to analysis
+par.tmin = 4;
+par.tmax = 4;
+
+for i=2%:length(Tmeta)
+    disp(' ')
+    disp(['Block:',num2str(Tmeta(i).BlockNo),' Treatment:', num2str(Tmeta(i).TreatmentNo),' Type:', Tmeta(i).Treatment])
+    % Plot the treatment data and store figures
+    Dat = SpawnSeisAnalyzeTreatment(Tmeta(i),tempdir,par);
+end
 
 % Plot envelope, calculate total SEL over the treatment (Nils Olav)
 %plotTreatment(Dat)
