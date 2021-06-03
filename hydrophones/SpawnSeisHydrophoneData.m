@@ -106,14 +106,12 @@ par.tmin = 3;% Data selection on sTime before peak in seconds
 par.tmax = 2;%sek
 par.minpeakdistance = 8; % Minimum distance between peaks in seconds
 par.Fs = 48000;
-tic
 for i=1:length(Tmeta)
     disp(' ')
     disp(['Block:',num2str(Tmeta(i).BlockNo),' Treatment:', num2str(Tmeta(i).TreatmentNo),' Type:', Tmeta(i).Treatment])
     % Plot the treatment data and store figures
     SpawnSeisAnalyzeTreatment(Tmeta(i),tempdir,par);
 end
-toc
 
 % Plot envelope, calculate total SEL over the treatment (Nils Olav)
 %plotTreatment(Dat)

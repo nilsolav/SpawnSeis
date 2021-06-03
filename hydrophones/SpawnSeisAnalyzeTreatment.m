@@ -13,10 +13,15 @@ for j=1:length(Tmeta_i.Hydrophone)
     if exist(tmpfil)
         load(tmpfil,'Dat'); % Loads DAT
         
-        % Detect and filter pulses (Nils Olav)
+        % Filter pressure data
+        tic
+        [C,D] = butter(3,[5 10000]/(par.Fs/2),'bandpass');
+        p = filtfilt(C,D,Dat.Pressure);% ca 30 sec run time
+        t = Dat.Time;
+        toc
+        
+        % Detect pulses
         if ~exist(pulsefil)
-            p = Dat.Pressure;
-            t = Dat.Time;
             DetectedPulses = DetectPulse(t,p,par);
             save(pulsefil,'DetectedPulses')
         else
@@ -57,15 +62,24 @@ function Pulses = DetectPulse(t,p,par)
 
 % Loop and remove the peaks closer than par.tmin/par.tmax to the break
 locind = false(1,length(loc));
+% Add variable for the negative pulses
+minpress = NaN(size(loc));
 hold on
 for i=1:length(loc)
+    % Get minimum pressure
+    tic
     indpulse = t > (loc(i)-par.tmin) & t < (loc(i)+par.tmax);
+    toc
     % Adding ten samples to be on the safe side. Sloppy, but works.
     if (length(t(indpulse))+10)>(par.tmin+par.tmax)*par.Fs
        locind(i)= true;
     else
         locind(i)=false;
     end
+    % Minimum pressure
+    minpress(i) = min(p(indpulse));
+    % Analyze each pulse
+    tmp = AnalyzePulse(t(indpulse),p(indpulse),loc(i),par,false,false);
 end
 
 % testplot
@@ -78,17 +92,16 @@ Pulses.t0 = loc(locind);
 Pulses.pp = pks(locind);
 Pulses.t0_f = loc(~locind);
 Pulses.pp_f = pks(~locind);
+Pulses.np = minpress(locind);
+Pulses.np_f = minpress(~locind);
 
 end
 
-function pulse=AnalyzePulse(t,p,t0,plt,frek)
+function pulse=AnalyzePulse(t,p,t0,par,plt,frek)
 % Analyze each individual pulse
-figure
-plot(t,p)
 
 %sampling rate
-dt=t(3)-t(2);
-Fs=round(1/dt);
+Fs = par.Fs;
 
 %find index for peak at t0
 ind_tid=find(t>=t0,1)
@@ -124,7 +137,7 @@ pulse.SEL=10*log10(pulse.Ex/1e-12)
 pulse.SELN=10*log10(noise.Ex/1e-12)
 
 %% frekvensanalyse
-if frek==1;
+if frek
     tuk=tukeywin(length(S1),0.3); %Tapering: lagar vindu som gir ein glatt overgang ved � setje start og sluttverdi p� tidsvindu til 0
     S=tuk.*S1; %1 sekund signal-sekvens
     %tek fft;
