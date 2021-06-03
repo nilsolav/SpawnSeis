@@ -102,10 +102,14 @@ end
 
 %% Process the treatment data
 % Filter data prior to analysis
-par.tmin = 3;% Data selection on sTime before peak in seconds
-par.tmax = 2;%sek
+par.tmin = -3;% Time before peak in seconds
+par.tmax = 2;% Time after peak in seconds
 par.minpeakdistance = 8; % Minimum distance between peaks in seconds
 par.Fs = 48000;
+par.SELinterval = [-0.3 0.7]; % Time interval for SEL calcuation
+par.noiseinterval = [-2 -1]; % Time interval for noise calculation
+
+
 for i=1:length(Tmeta)
     disp(' ')
     disp(['Block:',num2str(Tmeta(i).BlockNo),' Treatment:', num2str(Tmeta(i).TreatmentNo),' Type:', Tmeta(i).Treatment])

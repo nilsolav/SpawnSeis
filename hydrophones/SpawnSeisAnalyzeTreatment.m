@@ -68,7 +68,7 @@ hold on
 for i=1:length(loc)
     % Get minimum pressure
     tic
-    indpulse = t > (loc(i)-par.tmin) & t < (loc(i)+par.tmax);
+    indpulse = t > (loc(i)+par.tmin) & t < (loc(i)+par.tmax);
     toc
     % Adding ten samples to be on the safe side. Sloppy, but works.
     if (length(t(indpulse))+10)>(par.tmin+par.tmax)*par.Fs
