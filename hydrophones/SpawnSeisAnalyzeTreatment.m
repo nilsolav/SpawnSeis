@@ -79,7 +79,7 @@ for i=1:length(loc)
     % Minimum pressure
     minpress(i) = min(p(indpulse));
     % Analyze each pulse
-    tmp = AnalyzePulse(t(indpulse),p(indpulse),loc(i),par,false,false);
+    Pulses.param(i)= AnalyzePulse(t(indpulse),p(indpulse),loc(i),par,false,false);
 end
 
 % testplot
@@ -105,13 +105,14 @@ Fs = par.Fs;
 dt=1/Fs;
 
 %find index for peak at t0
-ind_tid=find(t>=t0,1)
+ind_tid=find(t>=t0,1);
+
 
 %select one second around peak
-tid=ind_tid-round(0.3*Fs):ind_tid+round(0.7*Fs);
+tid=ind_tid-round(par.SELinterval(1)*Fs):ind_tid+round(par.SELinterval(2)*Fs);
 
 %Do the same ting for noise before peak
-tidN=tid-round(2*Fs);
+tidN=tid-round(par.noiseStart.*Fs);
 
 %Select 1 second long signal to analyze
 S1=p(tid);%signal
