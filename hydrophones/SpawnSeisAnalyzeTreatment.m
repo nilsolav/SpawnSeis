@@ -14,11 +14,9 @@ for j=1:length(Tmeta_i.Hydrophone)
         load(tmpfil,'Dat'); % Loads DAT
         
         % Filter pressure data
-        tic
         [C,D] = butter(3,[5 10000]/(par.Fs/2),'bandpass');
         p = filtfilt(C,D,Dat.Pressure);% ca 30 sec run time
         t = Dat.Time;
-        toc
         
         % Detect pulses
         if ~exist(pulsefil)
@@ -37,6 +35,7 @@ for j=1:length(Tmeta_i.Hydrophone)
         legend('Incomplete pulses','Valid pulses')
         print(figfil,'-dpng')
         close(f)
+        
         
         % Analyze individual pulses
         %     for k=1:length(DetectedPulses.pp)
@@ -67,11 +66,9 @@ minpress = NaN(size(loc));
 hold on
 for i=1:length(loc)
     % Get minimum pressure
-    tic
     indpulse = t > (loc(i)+par.tmin) & t < (loc(i)+par.tmax);
-    toc
     % Adding ten samples to be on the safe side. Sloppy, but works.
-    if (length(t(indpulse))+10)>(par.tmin+par.tmax)*par.Fs
+    if (length(t(indpulse))+10)>(-par.tmin+par.tmax)*par.Fs
        locind(i)= true;
     else
         locind(i)=false;
@@ -107,23 +104,25 @@ dt=1/Fs;
 %find index for peak at t0
 ind_tid=find(t>=t0,1);
 
+% Time relative to peak
+t_rel = t-t(ind_tid);
 
-%select one second around peak
-tid=ind_tid-round(par.SELinterval(1)*Fs):ind_tid+round(par.SELinterval(2)*Fs);
+%Select one second around peak
+tid = t_rel>par.SELinterval(1) & t_rel<par.SELinterval(2);
 
 %Do the same ting for noise before peak
-tidN=tid-round(par.noiseStart.*Fs);
+tidN = t_rel>par.noiseStart(1) & t_rel<par.noiseStart(2);
 
 %Select 1 second long signal to analyze
 S1=p(tid);%signal
 S1N=p(tidN);%støy
 
 %Find and save max and min:
-[p1_max,t1_max]=max(S1);
-[p1_min,t1_min]=min(S1);
+[p1_max,~]=max(S1);
+[p1_min,~]=min(S1);
 
-[p1N_max,t1N_max]=max(S1N);
-[p1N_min,t1N_min]=min(S1N);
+[p1N_max,~]=max(S1N);
+[p1N_min,~]=min(S1N);
 
 pulse.pospeakpressure=p1_max;
 pulse.negpeakpressure=p1_min;

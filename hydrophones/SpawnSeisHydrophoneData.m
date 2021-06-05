@@ -107,7 +107,7 @@ par.tmax = 2;% Time after peak in seconds
 par.minpeakdistance = 8; % Minimum distance between peaks in seconds
 par.Fs = 48000;
 par.SELinterval = [-0.3 0.7]; % Time interval for SEL calcuation
-par.noiseStart = -2; % Time to select noise signal relative to pulse (Time interval for noise calculation is similar to interval for SEL-calculation. We need only the start relative to the pulse
+par.noiseStart = [-2 -1]; % Time to select noise signal relative to pulse (Time interval for noise calculation is similar to interval for SEL-calculation. We need only the start relative to the pulse
 
 
 for i=1:length(Tmeta)
