@@ -144,6 +144,17 @@ S1N=p(tidN);%støy
 [p1N_max,~]=max(S1N);
 [p1N_min,~]=min(S1N);
 
+% Initialize
+pulse.pospeakpressure=NaN;
+pulse.negpeakpressure=NaN;
+pulse.pospeakpressureN=NaN;
+pulse.negpeakpressureN=NaN;
+pulse.Ex=NaN;
+pulse.ExN=NaN; 
+pulse.SEL=NaN;
+pulse.SELN=NaN;
+
+% Add values
 pulse.pospeakpressure=p1_max;
 pulse.negpeakpressure=p1_min;
 
