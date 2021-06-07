@@ -62,7 +62,15 @@ function Pulses = DetectPulse(t,p,par)
 % Loop and remove the peaks closer than par.tmin/par.tmax to the break
 locind = false(1,length(loc));
 % Add variable for the negative pulses
-minpress = NaN(size(loc));
+pospeakpressure = NaN(size(loc));
+negpeakpressure = NaN(size(loc));
+pospeakpressureN = NaN(size(loc));
+negpeakpressureN = NaN(size(loc));
+Ex = NaN(size(loc));
+ExN = NaN(size(loc));
+SEL = NaN(size(loc));
+SELN = NaN(size(loc));
+
 hold on
 for i=1:length(loc)
     % Get minimum pressure
@@ -73,10 +81,17 @@ for i=1:length(loc)
     else
         locind(i)=false;
     end
-    % Minimum pressure
-    minpress(i) = min(p(indpulse));
+    
     % Analyze each pulse
-    Pulses.param(i)= AnalyzePulse(t(indpulse),p(indpulse),loc(i),par,false,false);
+    dum = AnalyzePulse(t(indpulse),p(indpulse),loc(i),par,false,false);
+    pospeakpressure(i) = dum.pospeakpressure;
+    negpeakpressure(i) = dum.negpeakpressure;
+    pospeakpressureN(i) = dum.pospeakpressureN;
+    negpeakpressureN(i) = dum.negpeakpressureN;
+    Ex(i) = dum.Ex;
+    ExN(i) = dum.ExN;
+    SEL(i) = dum.SEL;
+    SELN(i) = dum.SELN;
 end
 
 % testplot
@@ -85,12 +100,17 @@ end
 %semilogy(loc(locind),pks(locind),'b*')%,loc(~locind),pks(~locind),'r*')
 %plot(t,p,'k',loc(locind),pks(locind),'b*',loc(~locind),pks(~locind),'r*')
 
-Pulses.t0 = loc(locind);
-Pulses.pp = pks(locind);
-Pulses.t0_f = loc(~locind);
-Pulses.pp_f = pks(~locind);
-Pulses.np = minpress(locind);
-Pulses.np_f = minpress(~locind);
+Pulses.t0 = loc;
+Pulses.ind_ok = locind;
+Pulses.pospeakpressure = pospeakpressure;
+Pulses.negpeakpressure = negpeakpressure;
+Pulses.pospeakpressureN = pospeakpressureN;
+Pulses.negpeakpressureN = negpeakpressureN;
+Pulses.Ex = Ex;
+Pulses.ExN =ExN;
+Pulses.SEL = SEL;
+Pulses.SELN = SELN;
+
 
 end
 

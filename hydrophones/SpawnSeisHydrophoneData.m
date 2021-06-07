@@ -110,11 +110,15 @@ par.SELinterval = [-0.3 0.7]; % Time interval for SEL calcuation
 par.noiseStart = [-2 -1]; % Time to select noise signal relative to pulse (Time interval for noise calculation is similar to interval for SEL-calculation. We need only the start relative to the pulse
 
 
-for i=1:length(Tmeta)
+for i=2%1:length(Tmeta)
     disp(' ')
     disp(['Block:',num2str(Tmeta(i).BlockNo),' Treatment:', num2str(Tmeta(i).TreatmentNo),' Type:', Tmeta(i).Treatment])
     % Plot the treatment data and store figures
-    SpawnSeisAnalyzeTreatment(Tmeta(i),tempdir,par);
+    %try
+        SpawnSeisAnalyzeTreatment(Tmeta(i),tempdir,par);
+    %catch
+    %    warning('Failed')
+    %end
 end
 
 % Plot envelope, calculate total SEL over the treatment (Nils Olav)
