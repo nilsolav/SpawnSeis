@@ -8,7 +8,7 @@ function Pulses = SpawnSeisAnalyzeTreatment(Tmeta_i,tempdir,par)
 for j=1:length(Tmeta_i.Hydrophone)
     % read TEMP files
     tmpfil = fullfile(tempdir,['Block',num2str(Tmeta_i.BlockNo),'_Treat',num2str(Tmeta_i.TreatmentNo),'_Hydr',num2str(j),'.mat']);
-    figfil = fullfile(tempdir,['Block',num2str(Tmeta_i.BlockNo),'_Treat',num2str(Tmeta_i.TreatmentNo),'_Hydr',num2str(j),'.png']);
+    figfil = fullfile(tempdir,['Block',num2str(Tmeta_i.BlockNo),'_Treat',num2str(Tmeta_i.TreatmentNo),'_Hydr',num2str(j)]);
     pulsefil = fullfile(tempdir,['Block',num2str(Tmeta_i.BlockNo),'_Treat',num2str(Tmeta_i.TreatmentNo),'_Hydr',num2str(j),'pulses.mat']);
     if exist(tmpfil)
         load(tmpfil,'Dat'); % Loads DAT
@@ -27,28 +27,27 @@ for j=1:length(Tmeta_i.Hydrophone)
         end
         
         % Plot files in headless mode
+        D = DetectedPulses; 
         f = figure('visible', 'off');
-        plot(DetectedPulses.t0_f,DetectedPulses.pp_f,'r.',DetectedPulses.t0,DetectedPulses.pp,'b.')
+        plot(D.t0(D.ind_ok)/60,D.pospeakpressure(D.ind_ok),'k.',...
+            D.t0(D.ind_ok)/60,D.negpeakpressure(D.ind_ok),'r.')
         title(Tmeta_i.Hydrophone(j).Comment)
-        xlabel('Time relative to start Treatment (s)')
-        ylabel('Positive Peak Pressure (Pa)')
-        legend('Incomplete pulses','Valid pulses')
-        print(figfil,'-dpng')
+        legend({'Positive peak','Negative Peak'})
+        xlabel('Time relative to start Treatment (min)')
+        ylabel('Peak Pressure (Pa)')
+        print([figfil,'_peakpressure'],'-dpng')
         close(f)
         
-        
-        % Analyze individual pulses
-        %     for k=1:length(DetectedPulses.pp)
-        %         % Select pulse
-        %         ind = Dat.Time>(DetectedPulses.t0(k)-par.tmin) & Dat.Time<(DetectedPulses.t0(k)+par.tmax);
-        %         t = Dat.Time(ind);
-        %         p = Dat.Pressure(ind);
-        %
-        %         % Calculate stats per pulse (Tonje)
-        %         frek=1;%include frequency analysis
-        %         plt=1; %plot figures for pulse analysis
-        %         Pulses(k).pulse = AnalyzePulse(t,p,Pulses(k).t0,plt,frek);
-        %     end
+        D = DetectedPulses; 
+        f = figure('visible', 'off');
+        plot(D.t0(D.ind_ok)/60,D.SEL(D.ind_ok),'k.',...
+            D.t0(D.ind_ok)/60,D.SELN(D.ind_ok),'r.')
+        title(Tmeta_i.Hydrophone(j).Comment)
+        legend({'Pulse','Background Noise'})
+        xlabel('Time relative to start Treatment (min)')
+        ylabel('Sound Exposure Level (SEL) (dB re 1\muPa^2 s)')
+        print([figfil,'_SEL'],'-dpng')
+        close(f)
     end
 end
 end
@@ -86,6 +85,7 @@ for i=1:length(loc)
     dum = AnalyzePulse(t(indpulse),p(indpulse),loc(i),par,false,false);
     pospeakpressure(i) = dum.pospeakpressure;
     negpeakpressure(i) = dum.negpeakpressure;
+    disp(i)%i==766 gave error
     pospeakpressureN(i) = dum.pospeakpressureN;
     negpeakpressureN(i) = dum.negpeakpressureN;
     Ex(i) = dum.Ex;
@@ -154,19 +154,19 @@ pulse.ExN=NaN;
 pulse.SEL=NaN;
 pulse.SELN=NaN;
 
-% Add values
+% Calculate signal values
 pulse.pospeakpressure=p1_max;
 pulse.negpeakpressure=p1_min;
-
-pulse.pospeakpressureN=p1N_max;
-pulse.negpeakpressureN=p1N_min;
-
-%Find and save Ex and SEL:
-
 pulse.Ex=dt*sum(S1.^2); %energi i signal
-pulse.ExN=dt*sum(S1N.^2); %same som rms
 pulse.SEL=10*log10(pulse.Ex/1e-12);
-pulse.SELN=10*log10(pulse.ExN/1e-12);
+
+% Calculate noise values (if interval is present in the pulse)
+if length(find(tidN))>1
+    pulse.pospeakpressureN=p1N_max;
+    pulse.negpeakpressureN=p1N_min;
+    pulse.ExN=dt*sum(S1N.^2); %same som rms
+    pulse.SELN=10*log10(pulse.ExN/1e-12);
+end
 
 %% frequency analysis
 if frek
