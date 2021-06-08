@@ -47,16 +47,11 @@ The 1 second signal sequence was then tapered by a tukeywindow to set the start 
 Then a fast fourier transform was used to estimate the frequency spectrum of the signal.
 The energy spectral density was estimated as 
 
-text in progress:
-ESD=((abs(P1)).^2)*(L/(2*Fs))
+ESD=((abs(P1)).^2)*df) (Energy spectral density, also called "frequency integrated sound exposure spectral density (ISO)
 
-where P1 is 2 times the frequency spectrum
+where P1 fast fourier transform of the pressure,
 
-df=
 
-  ESD:=10*log10(ESD/1e-12);
- ESDN:=10*log10(ESDN/1e-12);
-  F:=frekv;
 
 
 
