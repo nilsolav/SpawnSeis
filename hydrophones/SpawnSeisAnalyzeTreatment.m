@@ -2,16 +2,24 @@ function Pulses = SpawnSeisAnalyzeTreatment(Tmeta_i,tempdir,par)
 
 
 % Extract time-pressure data for all sensors from one treatment
-%
 
 % Loop over the different deplyments relevant for this treatment
 for j=1:length(Tmeta_i.Hydrophone)
     % read TEMP files
     tmpfil = fullfile(tempdir,['Block',num2str(Tmeta_i.BlockNo),'_Treat',num2str(Tmeta_i.TreatmentNo),'_Hydr',num2str(j),'.mat']);
-    figfil = fullfile(tempdir,['Block',num2str(Tmeta_i.BlockNo),'_' Tmeta_i.Treatment,'_Hydr',num2str(j)]);
-    pulsefil = fullfile(tempdir,['Block',num2str(Tmeta_i.BlockNo),'_Treat',num2str(Tmeta_i.TreatmentNo),'_Hydr',num2str(j),'pulses.mat']);
-    mkdir(tempdir,['Block',num2str(Tmeta_i.BlockNo),'_' Tmeta_i.Treatment,'_Hydr',num2str(j)]);
-    figdir=fullfile(tempdir,['Block',num2str(Tmeta_i.BlockNo),'_' Tmeta_i.Treatment,'_Hydr',num2str(j)]);
+    
+    % Generate descriptive figure file names
+    figfil = fullfile(tempdir,['Block',num2str(Tmeta_i.BlockNo),'_Treat',num2str(Tmeta_i.TreatmentNo),'_',Tmeta_i.Treatment,...
+        '_',Tmeta_i.Hydrophone(j).DeplNumber,'_Location_',Tmeta_i.Hydrophone(j).Location]);
+
+    % Temporary pulse file to avoid detecting the pulses at each run
+    pulsefil = [figfil,'_pulses.mat'];
+    
+    % Generate a separate folder for the pulses
+    if ~exist(figfil)
+        mkdir(figfil)
+    end
+    
     if exist(tmpfil)
         load(tmpfil,'Dat'); % Loads DAT
         
@@ -90,8 +98,6 @@ for j=1:length(Tmeta_i.Hydrophone)
         indp(3)=max(find(tempd<par.prctile(1)));
         indp(4)=max(find(tempd<par.prctile(2)));
         indp(5)=max(find(tempd<par.prctile(3)));
-        
-        
         
         %time for D.to(ind(1))
         

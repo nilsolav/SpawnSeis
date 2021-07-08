@@ -88,6 +88,7 @@ for i=1:length(Tmeta)
             Tmeta(i).Hydrophone(k).Dmeta_index = j;
             Tmeta(i).Hydrophone(k).Comment = Dmeta(j).Comment;
             Tmeta(i).Hydrophone(k).Location = Dmeta(j).Location;
+            Tmeta(i).Hydrophone(k).DeplNumber = Dmeta(j).DeplNumber;
             k=k+1;
         end        
     end    
