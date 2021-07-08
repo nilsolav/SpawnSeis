@@ -18,7 +18,7 @@ else
     rootdir = '\\ces.hi.no\cruise_data';
     tempdir = '.';
 end
-
+    
 % Metadata for each hydrophone 
 [~,~,Hmeta_raw] = xlsread('SpawnSeisHydrophoneMetaData.csv');
 Hmeta=cell2struct(Hmeta_raw(2:end,:),Hmeta_raw(1,:),2);
@@ -87,6 +87,7 @@ for i=1:length(Tmeta)
             Tmeta(i).Hydrophone(k).DataDir = fullfile(rootdir,Dmeta(j).StartTime(7:10),[Dmeta(j).CalibrationFileBeginning(1:8),'_PH.U.SVERDRUP II[1007]'],'EXPERIMENTS','HYDROPHONES',Dmeta(j).Folder);
             Tmeta(i).Hydrophone(k).Dmeta_index = j;
             Tmeta(i).Hydrophone(k).Comment = Dmeta(j).Comment;
+            Tmeta(i).Hydrophone(k).Location = Dmeta(j).Location;
             k=k+1;
         end        
     end    
