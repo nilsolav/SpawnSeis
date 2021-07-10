@@ -48,7 +48,6 @@ for j=1:length(Tmeta_i.Hydrophone)
         print([figfil,'_peakpressure'],'-dpng')
         close(f)
         
-        D = DetectedPulses;
         f = figure('visible', 'off');
         plot(D.t0(D.ind_ok)/60,D.SEL(D.ind_ok),'k.',...
             D.t0(D.ind_ok)/60,D.SELN(D.ind_ok),'r.')
@@ -59,7 +58,7 @@ for j=1:length(Tmeta_i.Hydrophone)
         print([figfil,'_SEL'],'-dpng')
         close(f)
         
-        %         %estimate SEL avarage:
+        % Estimate SEL average
         D.Ex_all=(1/par.Fs)*sum(p.^2);
         D.SEL_all_dB=10*log10(D.Ex_all/1e-12);
         D.Ex_all_1sec=D.Ex_all/((t(end)-t(1))*22/30); % (tilnærming: lydopptak 22/30 delar av tida)
@@ -70,7 +69,6 @@ for j=1:length(Tmeta_i.Hydrophone)
         plot(t/60,p,'k')
         legend(['cumSEL=' num2str(round(D.SEL_all_dB,1)) 'dB re 1\muPa^2 s,' 10 'rms=' num2str(round(D.rms,1)) ' dB re 1\muPa'])
         title([Tmeta_i.Treatment ', ' Tmeta_i.Hydrophone(j).Comment])
-        %         legend({'Pulse','Background Noise'})
         xlabel('Time relative to start Treatment (min)')
         ylabel('Pa')
         print([figfil,'_raw'],'-dpng')
@@ -82,28 +80,24 @@ for j=1:length(Tmeta_i.Hydrophone)
         Data = [D.t0(D.ind_ok)/60;D.pospeakpressure(D.ind_ok);D.negpeakpressure(D.ind_ok);D.SEL(D.ind_ok);D.SELN(D.ind_ok)]';
         writematrix(Data,[figfil,'.csv'],'Delimiter',';','WriteMode','append')
         
-        %
-        % pick out pulses for more detailed analyses:
-        
+        % Pick out pulses for more detailed analyses
         peak_ok=D.pospeakpressure(D.ind_ok);
         t_ok=D.t0(D.ind_ok);
-        
         [~,indp(1)]=max(peak_ok);
         [~,indp(2)]=min(peak_ok);
         
-        %in addition to max and mean some more peaks are selected based on the
-        %percentile
+        % In addition to max and mean some more peaks are selected based 
+        % on the percentile
         tempd= cumsum(peak_ok);
         tempd=tempd./max(tempd);  % cumulative sum normalized to 1
         indp(3)=max(find(tempd<par.prctile(1)));
         indp(4)=max(find(tempd<par.prctile(2)));
         indp(5)=max(find(tempd<par.prctile(3)));
         
-        %time for D.to(ind(1))
-        
+        % Analyse each selected pulse
         for b=1:5
             indpulse = t > (t_ok(indp(b))+par.tmin) & (t < t_ok(indp(b))+par.tmax);
-            dum = AnalyzePulse(t(indpulse),p(indpulse),t_ok(indp(b)),par,true,true,figdir);
+            dum = AnalyzePulse(t(indpulse),p(indpulse),t_ok(indp(b)),par,true,true,figfil);
         end
     end
 end
@@ -128,6 +122,7 @@ SEL = NaN(size(loc));
 SELN = NaN(size(loc));
 
 hold on
+textprogressbar('Analyze pulses: ')
 for i=1:length(loc)
     % Get minimum pressure
     indpulse = t > (loc(i)+par.tmin) & t < (loc(i)+par.tmax);
@@ -143,14 +138,15 @@ for i=1:length(loc)
     dum = AnalyzePulse(t(indpulse),p(indpulse),loc(i),par,false,false);
     pospeakpressure(i) = dum.pospeakpressure;
     negpeakpressure(i) = dum.negpeakpressure;
-    disp(i)%i==766 gave error
     pospeakpressureN(i) = dum.pospeakpressureN;
     negpeakpressureN(i) = dum.negpeakpressureN;
     Ex(i) = dum.Ex;
     ExN(i) = dum.ExN;
     SEL(i) = dum.SEL;
     SELN(i) = dum.SELN;
+    textprogressbar(100*(i/length(loc)))
 end
+textprogressbar(' Pulse analysis completed.')
 
 % testplot
 %plot(loc(locind),pks(locind),'b-*',loc(~locind),pks(~locind),'r*')
@@ -172,6 +168,62 @@ Pulses.SELN = SELN;
 
 end
 
+
+function textprogressbar(c)
+% This function creates a text progress bar. It should be called with a 
+% STRING argument to initialize and terminate. Otherwise the number correspoding 
+% to progress in % should be supplied.
+% INPUTS:   C   Either: Text string to initialize or terminate 
+%                       Percentage number to show progress 
+% OUTPUTS:  N/A
+% Example:  Please refer to demo_textprogressbar.m
+% Author: Paul Proteus (e-mail: proteus.paul (at) yahoo (dot) com)
+% Version: 1.0
+% Changes tracker:  29.06.2010  - First version
+% Inspired by: http://blogs.mathworks.com/loren/2007/08/01/monitoring-progress-of-a-calculation/
+%% Initialization
+persistent strCR;           %   Carriage return pesistent variable
+% Vizualization parameters
+strPercentageLength = 10;   %   Length of percentage string (must be >5)
+strDotsMaximum      = 10;   %   The total number of dots in a progress bar
+%% Main 
+if isempty(strCR) && ~ischar(c),
+    % Progress bar must be initialized with a string
+    error('The text progress must be initialized with a string');
+elseif isempty(strCR) && ischar(c),
+    % Progress bar - initialization
+    fprintf('%s',c);
+    strCR = -1;
+elseif ~isempty(strCR) && ischar(c),
+    % Progress bar  - termination
+    strCR = [];  
+    fprintf([c '\n']);
+elseif isnumeric(c)
+    % Progress bar - normal progress
+    c = floor(c);
+    percentageOut = [num2str(c) '%%'];
+    percentageOut = [percentageOut repmat(' ',1,strPercentageLength-length(percentageOut)-1)];
+    nDots = floor(c/100*strDotsMaximum);
+    dotOut = ['[' repmat('.',1,nDots) repmat(' ',1,strDotsMaximum-nDots) ']'];
+    strOut = [percentageOut dotOut];
+    
+    % Print it on the screen
+    if strCR == -1,
+        % Don't do carriage return during first run
+        fprintf(strOut);
+    else
+        % Do it during all the other runs
+        fprintf([strCR strOut]);
+    end
+    
+    % Update carriage return
+    strCR = repmat('\b',1,length(strOut)-1);
+    
+else
+    % Any other unexpected input
+    error('Unsupported argument type');
+end
+end
 function pulse=AnalyzePulse(t,p,t0,par,plt,frek,figdir)
 
 
@@ -286,22 +338,22 @@ if frek
         set(findall(gca, 'Type', 'Line'),'LineWidth',1.5);
         set(gca,'fontsize', 25);
         
-        
-        subplot(2,1,2)
-        plot(pulse.F,pulse.ESD,'k')
-        hold on
-        plot(pulse.F,pulse.ESDN,'r')
-        title('Energy Spectral Density')
-        ylabel({'dB re 1 \muPa^2\cdots/Hz'})
-        legend('signal','ambient')
-        set(findall(gca, 'Type', 'Line'),'LineWidth',1.5);
-        xlim([0 1000])
-        
-        xlabel('Frequency, Hz')
-        set(findobj(gcf,'type','axes'),'FontName','Calibri','FontSize',22, ...
-            'FontWeight','Bold', 'LineWidth', 1.5,'layer','top');
-        set(findobj(gcf, 'Type', 'Line'),'LineWidth',1.5);
-        
+        if isfield(pulse,'F') % Check if data exist before plotting
+            subplot(2,1,2)
+            plot(pulse.F,pulse.ESD,'k')
+            hold on
+            plot(pulse.F,pulse.ESDN,'r')
+            title('Energy Spectral Density')
+            ylabel({'dB re 1 \muPa^2\cdots/Hz'})
+            legend('signal','ambient')
+            set(findall(gca, 'Type', 'Line'),'LineWidth',1.5);
+            xlim([0 1000])
+            
+            xlabel('Frequency, Hz')
+            set(findobj(gcf,'type','axes'),'FontName','Calibri','FontSize',22, ...
+                'FontWeight','Bold', 'LineWidth', 1.5,'layer','top');
+            set(findobj(gcf, 'Type', 'Line'),'LineWidth',1.5);
+        end
         print(f,fullfile(figdir,['Onesecond_ESD_' num2str(round(t0))]),'-dpng')
         close(f)
         
