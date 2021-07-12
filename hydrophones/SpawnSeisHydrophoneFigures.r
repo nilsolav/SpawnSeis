@@ -85,11 +85,12 @@ Data <- rbind(Data,Tmp)
 
 Data$TreatmentYear = paste(Data$Treatment,Data$Year)
 n<-cbind(Data$Treatment,Data$Year)
-# Overview off all data in one figure (pretty messy :)
+# Overview off all data in one figure
 ggplot(Data,aes(y=SEL,x=t0, color=TreatmentYear)) + geom_point() + geom_smooth(span=0.1, se=F)
 ggplot(Data,aes(y=log(pospeakpressure),x=t0, color=Treatment, shape=Year)) + geom_point()
+ggplot(Data,aes(y=SEL,x=t0, color=Treatment)) + geom_point() + facet_grid(rows = vars(Year))
 
-# SEL Broken into subpanels
+# SEL Manually broken into subpanels
 Inner2020 <- ggplot(subset(Data, (Location %in% "InnerBay")&(Year %in% "2020")),aes(y=SEL,x=t0, color=TreatmentYear)) + geom_point() + geom_smooth(span=0.1, se=F)
 Inner2021 <- ggplot(subset(Data, (Location %in% "InnerBay")&(Year %in% "2021")),aes(y=SEL,x=t0, color=TreatmentYear)) + geom_point() + geom_smooth(span=0.1, se=F)
 Outer2020 <- ggplot(subset(Data, (Location %in% "OuterBay")&(Year %in% "2020")),aes(y=SEL,x=t0, color=TreatmentYear)) + geom_point() + geom_smooth(span=0.1, se=F)
@@ -129,6 +130,10 @@ ggsave(file="SEL_2.png", g)
 
 # Pressure
 # pospeakpressure broken into subpanels
+
+
+ggplot(subset(Data, (Location %in% "InnerBay")),aes(y=pospeakpressure,x=t0, color=Treatment, shape=Year)) + geom_point() + geom_smooth(span=0.1, se=F) + facet_grid(rows = vars(drv))
+
 Inner2020 <- ggplot(subset(Data, (Location %in% "InnerBay")&(Year %in% "2020")),aes(y=pospeakpressure,x=t0, color=Treatment, shape=Year)) + geom_point() + geom_smooth(span=0.1, se=F)
 Inner2021 <- ggplot(subset(Data, (Location %in% "InnerBay")&(Year %in% "2021")),aes(y=pospeakpressure,x=t0, color=Treatment, shape=Year)) + geom_point() + geom_smooth(span=0.1, se=F)
 Outer2020 <- ggplot(subset(Data, (Location %in% "OuterBay")&(Year %in% "2020")),aes(y=pospeakpressure,x=t0, color=Treatment, shape=Year)) + geom_point() + geom_smooth(span=0.1, se=F)
